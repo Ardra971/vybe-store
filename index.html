@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VYBE — Shop Your Vibe</title>
+  <meta name="description" content="VYBE is a demo premium lifestyle store: sneakers, streetwear, bags and accessories. Find your style. Feel your VYBE.">
+  <meta name="theme-color" content="#111111">
+
+  <!-- External dependency: Google Fonts (Syne + Inter). Fallback system fonts are set in style.css. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- Safety net: keeps icons small and the page dark if style.css fails to load (wrong folder, isolated preview, typo).
+       style.css loads after this and overrides it, so the real design is unchanged. -->
+  <style>
+    html, body { margin: 0; background: #111111; color: #f5f3ee; font-family: Inter, system-ui, Arial, sans-serif; }
+    .icon { width: 22px; height: 22px; }
+    img { max-width: 100%; }
+    [hidden], .drawer, .modal { display: none; }
+  </style>
+  <link rel="stylesheet" href="style.css">
+  <!-- Marks JS as available so scroll-reveal hiding only applies when JS runs -->
+  <script>document.documentElement.classList.add('js');</script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <!-- SVG icon sprite (used with <use href="#i-name">) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.5s-8-4.9-8-11A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5c0 6.1-8 11-8 11z" style="fill:var(--heart-fill,none)" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- A. ANNOUNCEMENT BAR -->
+  <div class="announcement" role="region" aria-label="Announcement">
+    <div class="marquee">
+      <div class="marquee-track">
+        <span>NEW SEASON. NEW ENERGY. FREE SHIPPING ON ELIGIBLE ORDERS.</span>
+        <span>NEW SEASON. NEW ENERGY. FREE SHIPPING ON ELIGIBLE ORDERS.</span>
+        <span aria-hidden="true">NEW SEASON. NEW ENERGY. FREE SHIPPING ON ELIGIBLE ORDERS.</span>
+        <span aria-hidden="true">NEW SEASON. NEW ENERGY. FREE SHIPPING ON ELIGIBLE ORDERS.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. NAVIGATION -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-inner">
+      <button class="icon-btn menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Open menu">
+        <span class="menu-bars" aria-hidden="true"></span>
+      </button>
+
+      <a class="logo" href="#top" aria-label="VYBE home">VYBE</a>
+
+      <nav class="primary-nav" id="primaryNav" aria-label="Primary">
+        <ul>
+          <li><a href="#collection" data-category="All">Shop</a></li>
+          <li><a href="#collection" data-category="Sneakers">Sneakers</a></li>
+          <li><a href="#collection" data-category="Streetwear">Streetwear</a></li>
+          <li><a href="#collection" data-category="Accessories">Accessories</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="searchToggle" type="button" aria-expanded="false" aria-controls="searchBar" aria-label="Open search">
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        </button>
+        <button class="icon-btn" id="wishlistToggle" type="button" aria-label="Open wishlist, 0 items">
+          <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+          <span class="count-badge" id="wishlistCount" aria-hidden="true">0</span>
+        </button>
+        <button class="icon-btn" id="cartToggle" type="button" aria-label="Open shopping bag, 0 items">
+          <svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg>
+          <span class="count-badge" id="cartCount" aria-hidden="true">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search bar (opens from the nav search icon; synced with the shop search field) -->
+    <div class="search-bar" id="searchBar" hidden>
+      <div class="container">
+        <form class="search-field" id="navSearchForm" role="search">
+          <label class="sr-only" for="navSearchInput">Search products by name or category</label>
+          <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" id="navSearchInput" placeholder="Search sneakers, hoodies, bags…" autocomplete="off">
+          <button class="icon-btn" type="button" id="navSearchClose" aria-label="Close search">
+            <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+    <noscript><p class="noscript-note">VYBE needs JavaScript to show products, the bag and the wishlist.</p></noscript>
+
+    <!-- C. HERO -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="hero-tag">NEW SEASON / 2026</p>
+          <h1 class="hero-title" id="heroTitle">
+            <span class="line"><span>FIND</span></span>
+            <span class="line"><span>YOUR</span></span>
+            <span class="line accent"><span>VIBE.</span></span>
+          </h1>
+          <p class="hero-sub">Your style. Your energy. Your rules.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#collection" data-category="All">EXPLORE COLLECTION</a>
+            <a class="btn btn-outline" href="#vibe">DISCOVER YOUR VIBE</a>
+          </div>
+          <nav class="hero-links" aria-label="Quick categories">
+            <span>Shop</span>
+            <a href="#collection" data-category="Sneakers">Sneakers</a>
+            <a href="#collection" data-category="Streetwear">Streetwear</a>
+            <a href="#collection" data-category="Bags">Bags</a>
+            <a href="#collection" data-category="Accessories">Accessories</a>
+          </nav>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-block" aria-hidden="true"></div>
+          <figure class="hero-frame">
+            <img src="images/hero-banner.jpg" alt="VYBE new season campaign: streetwear and sneaker styling" width="800" height="1000" fetchpriority="high">
+          </figure>
+          <div class="spin-badge" aria-hidden="true">
+            <svg viewBox="0 0 120 120">
+              <defs><path id="badgePath" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0"/></defs>
+              <text><textPath href="#badgePath">SHOP YOUR VYBE • SHOP YOUR VYBE • </textPath></text>
+            </svg>
+          </div>
+          <div class="hero-float" aria-hidden="true"><span>Collection</span><strong>Vol. 01</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- D. VIBE MATCH -->
+    <section class="section vibe" id="vibe" aria-labelledby="vibeHeading" data-reveal>
+      <div class="container">
+        <p class="eyebrow">Vibe Match</p>
+        <h2 class="section-title" id="vibeHeading">WHAT'S YOUR VYBE TODAY?</h2>
+        <p class="section-sub" id="vibeText" aria-live="polite">Pick a mood and we'll filter the collection to match.</p>
+
+        <div class="vibe-grid" role="group" aria-label="Choose your vibe">
+          <button class="vibe-tile" type="button" data-vibe="Minimal" aria-pressed="false">
+            <span class="vibe-num">01</span>
+            <span class="vibe-name">MINIMAL</span>
+            <span class="vibe-desc">Clean lines. Quiet confidence.</span>
+          </button>
+          <button class="vibe-tile" type="button" data-vibe="Street" aria-pressed="false">
+            <span class="vibe-num">02</span>
+            <span class="vibe-name">STREET</span>
+            <span class="vibe-desc">Loud layers. City energy.</span>
+          </button>
+          <button class="vibe-tile" type="button" data-vibe="Bold" aria-pressed="false">
+            <span class="vibe-num">03</span>
+            <span class="vibe-name">BOLD</span>
+            <span class="vibe-desc">Contrast and attitude, no apologies.</span>
+          </button>
+          <button class="vibe-tile" type="button" data-vibe="Everyday" aria-pressed="false">
+            <span class="vibe-num">04</span>
+            <span class="vibe-name">EVERYDAY</span>
+            <span class="vibe-desc">Easy pieces for every day.</span>
+          </button>
+        </div>
+
+        <button class="btn btn-outline vibe-reset" id="vibeReset" type="button" hidden>RESET VIBE</button>
+      </div>
+    </section>
+
+    <!-- E. FEATURED PRODUCTS (search, filters, sorting) -->
+    <section class="section collection" id="collection" aria-labelledby="collectionTitle" data-reveal>
+      <div class="container">
+        <p class="eyebrow">Shop all</p>
+        <h2 class="section-title" id="collectionTitle">THE CURRENT ROTATION</h2>
+
+        <div class="toolbar">
+          <form class="search-field" id="searchForm" role="search">
+            <label class="sr-only" for="searchInput">Search products by name or category</label>
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <input type="search" id="searchInput" placeholder="Search name or category" autocomplete="off">
+            <button class="icon-btn" type="button" id="searchClear" aria-label="Clear search" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+            </button>
+          </form>
+
+          <div class="chips" role="group" aria-label="Filter by category">
+            <button class="chip" type="button" data-category="All" aria-pressed="true">All</button>
+            <button class="chip" type="button" data-category="Sneakers" aria-pressed="false">Sneakers</button>
+            <button class="chip" type="button" data-category="Streetwear" aria-pressed="false">Streetwear</button>
+            <button class="chip" type="button" data-category="Bags" aria-pressed="false">Bags</button>
+            <button class="chip" type="button" data-category="Accessories" aria-pressed="false">Accessories</button>
+          </div>
+
+          <div class="sort">
+            <label for="sortSelect">Sort by</label>
+            <select id="sortSelect">
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="results-bar">
+          <p id="resultsCount" role="status" aria-live="polite"></p>
+          <button class="link-btn" type="button" id="resetFilters" hidden>Reset all filters</button>
+        </div>
+
+        <ul class="product-grid" id="productGrid"></ul>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <h3>Nothing matches this combination.</h3>
+          <p>Try a different vibe, category or search word, or start over.</p>
+          <button class="btn btn-primary" type="button" id="emptyReset">RESET FILTERS</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- F. SHOP BY CATEGORY -->
+    <section class="section categories" id="categories" aria-labelledby="categoriesTitle" data-reveal>
+      <div class="container">
+        <p class="eyebrow">Categories</p>
+        <h2 class="section-title" id="categoriesTitle">SHOP BY CATEGORY</h2>
+
+        <div class="category-grid">
+          <a class="category-card cat-tall" href="#collection" data-category="Sneakers">
+            <img src="images/sneaker-retro.jpg" alt="Retro sneaker on a plain backdrop" width="600" height="800" loading="lazy">
+            <div class="category-info"><h3>Sneakers</h3><p>Step up. Stand out.</p><span class="btn btn-primary btn-sm">EXPLORE SNEAKERS</span></div>
+          </a>
+          <a class="category-card cat-wide" href="#collection" data-category="Streetwear">
+            <img src="images/hoodie-black.jpg" alt="Black hoodie from the streetwear range" width="900" height="500" loading="lazy">
+            <div class="category-info"><h3>Streetwear</h3><p>Layers with attitude.</p><span class="btn btn-primary btn-sm">EXPLORE STREETWEAR</span></div>
+          </a>
+          <a class="category-card" href="#collection" data-category="Bags">
+            <img src="images/bag-crossbody.jpg" alt="Crossbody bag" width="600" height="600" loading="lazy">
+            <div class="category-info"><h3>Bags</h3><p>Carry it your way.</p><span class="btn btn-primary btn-sm">EXPLORE BAGS</span></div>
+          </a>
+          <a class="category-card" href="#collection" data-category="Accessories">
+            <img src="images/sunglasses.jpg" alt="Sunglasses from the accessories range" width="600" height="600" loading="lazy">
+            <div class="category-info"><h3>Accessories</h3><p>The finishing touch.</p><span class="btn btn-primary btn-sm">EXPLORE ACCESSORIES</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- G. TRENDING -->
+    <section class="section trending" id="trending" aria-labelledby="trendingTitle" data-reveal>
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Most wanted</p>
+            <h2 class="section-title" id="trendingTitle">TRENDING RIGHT NOW</h2>
+          </div>
+          <a class="btn btn-outline" href="#collection" data-category="All" data-reset-all>VIEW FULL COLLECTION</a>
+        </div>
+        <div class="trending-layout">
+          <div class="trending-feature" id="trendingFeature"></div>
+          <ul class="trending-list" id="trendingList"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- H. EDITORIAL CAMPAIGN (image already contains its own text, so nothing is overlaid on it) -->
+    <section class="campaign" aria-labelledby="campaignTitle" data-reveal>
+      <div class="campaign-wrap">
+        <figure class="campaign-figure">
+          <img src="images/campaign.jpg" alt="VYBE new season campaign artwork" width="1600" height="800" loading="lazy">
+        </figure>
+        <div class="campaign-caption">
+          <div class="campaign-text">
+            <p class="eyebrow">The campaign</p>
+            <h2 class="campaign-title" id="campaignTitle">Mix it. Break it. Make it yours.</h2>
+            <p>New season pieces made to be styled your way. Layer textures, skip the dress code and build outfits that sound like you.</p>
+          </div>
+          <a class="btn btn-primary" href="#collection" data-category="All" data-reset-all>SHOP THE CAMPAIGN</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- I. NEWSLETTER -->
+    <section class="section newsletter" id="newsletter" aria-labelledby="newsletterTitle" data-reveal>
+      <div class="container newsletter-inner">
+        <div>
+          <h2 class="section-title" id="newsletterTitle">GET IN THE VYBE.</h2>
+          <p class="section-sub">Early drops, restocks and style notes. No spam.</p>
+        </div>
+        <form class="newsletter-form" id="newsletterForm" novalidate>
+          <label for="newsletterEmail">Email address</label>
+          <div class="newsletter-row">
+            <input type="email" id="newsletterEmail" name="email" placeholder="you@example.com" autocomplete="email" aria-describedby="newsletterMessage">
+            <button class="btn btn-primary" type="submit">SUBSCRIBE</button>
+          </div>
+          <p class="form-message" id="newsletterMessage" role="status" aria-live="polite"></p>
+          <p class="note">Demo form: nothing is sent or stored. Real newsletter delivery needs a backend or an email service.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- J. FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="#top" aria-label="VYBE back to top">VYBE</a>
+        <p>FIND YOUR STYLE. FEEL YOUR VYBE.</p>
+      </div>
+
+      <nav aria-label="Shop links">
+        <h2 class="footer-title">Shop</h2>
+        <ul>
+          <li><a href="#collection" data-category="All">All products</a></li>
+          <li><a href="#collection" data-category="Sneakers">Sneakers</a></li>
+          <li><a href="#collection" data-category="Streetwear">Streetwear</a></li>
+          <li><a href="#collection" data-category="Bags">Bags</a></li>
+          <li><a href="#collection" data-category="Accessories">Accessories</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Customer support">
+        <h2 class="footer-title">Support</h2>
+        <ul>
+          <li><button class="link-btn" type="button" data-info="shipping">Shipping</button></li>
+          <li><button class="link-btn" type="button" data-info="returns">Returns</button></li>
+          <li><button class="link-btn" type="button" data-info="sizing">Size guide</button></li>
+          <li><button class="link-btn" type="button" data-info="faq">FAQ</button></li>
+        </ul>
+      </nav>
+
+      <div>
+        <h2 class="footer-title">About</h2>
+        <p class="footer-text">VYBE is a fictional brand built as a frontend portfolio project.</p>
+        <button class="link-btn" type="button" data-info="about">About this demo</button>
+        <h2 class="footer-title">Contact (placeholder)</h2>
+        <address class="footer-text">
+          Placeholder details only:<br>
+          hello@example.com<br>
+          +00 000 000 0000
+        </address>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <ul class="social-links" aria-label="Social media (placeholder links)">
+        <li><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a></li>
+        <li><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+        <li><a href="https://www.pinterest.com/" target="_blank" rel="noopener noreferrer">Pinterest</a></li>
+      </ul>
+      <p>&copy; 2026 VYBE. Demo project, not a real store.</p>
+      <p>
+        <button class="link-btn" type="button" data-info="privacy">Privacy (demo)</button>
+        <button class="link-btn" type="button" data-info="terms">Terms (demo)</button>
+      </p>
+    </div>
+  </footer>
+
+  <!-- OVERLAYS -->
+  <div class="overlay" id="overlay" hidden></div>
+
+  <!-- Quick view modal -->
+  <div class="modal" id="quickViewModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-panel qv-panel" role="dialog" aria-modal="true" aria-labelledby="qvTitle" tabindex="-1">
+      <button class="icon-btn modal-close" type="button" data-close aria-label="Close quick view">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+      <div class="qv-media"><img id="qvImage" src="" alt="" width="600" height="750"></div>
+      <div class="qv-info">
+        <p class="eyebrow" id="qvCategory"></p>
+        <h2 id="qvTitle"></h2>
+        <p class="qv-price" id="qvPrice"></p>
+        <p class="qv-desc" id="qvDescription"></p>
+
+        <fieldset class="qv-sizes" id="qvSizeGroup">
+          <legend>Select size</legend>
+          <div class="size-options" id="qvSizes"></div>
+          <p class="field-error" id="qvSizeError" role="alert" hidden>Please select a size before adding to bag.</p>
+        </fieldset>
+
+        <div class="qv-qty">
+          <span id="qvQtyLabel">Quantity</span>
+          <div class="qty-stepper" role="group" aria-labelledby="qvQtyLabel">
+            <button class="icon-btn" type="button" id="qvQtyMinus" aria-label="Decrease quantity"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <output id="qvQty" aria-live="polite">1</output>
+            <button class="icon-btn" type="button" id="qvQtyPlus" aria-label="Increase quantity"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+
+        <div class="qv-actions">
+          <button class="btn btn-primary" type="button" id="qvAddToCart">ADD TO BAG</button>
+          <button class="icon-btn wish-btn" type="button" id="qvWishlist" aria-pressed="false" aria-label="Add to wishlist">
+            <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <aside class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true" tabindex="-1">
+    <div class="drawer-head">
+      <h2 id="cartTitle">Your bag</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close bag">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+
+    <div class="shipping-progress">
+      <p id="shippingMessage"></p>
+      <div class="progress" id="shippingProgress" role="progressbar" aria-label="Progress towards free shipping" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="shippingBar"></span></div>
+      <p class="note" id="shippingPolicy">Demo policy: free shipping above ₹4,999, otherwise ₹149.</p>
+    </div>
+
+    <ul class="drawer-list" id="cartItems"></ul>
+
+    <div class="drawer-empty" id="cartEmpty" hidden>
+      <p>Your bag is empty.</p>
+      <button class="btn btn-outline" type="button" data-close>START SHOPPING</button>
+    </div>
+
+    <div class="drawer-foot" id="cartFooter">
+      <dl class="totals">
+        <div><dt>Subtotal</dt><dd id="cartSubtotal">₹0</dd></div>
+        <div><dt>Shipping (estimate)</dt><dd id="cartShipping">₹0</dd></div>
+        <div class="totals-final"><dt>Total (estimate)</dt><dd id="cartTotal">₹0</dd></div>
+      </dl>
+      <button class="btn btn-primary btn-block" type="button" id="checkoutBtn">CHECKOUT (DEMO)</button>
+      <button class="btn btn-outline btn-block" type="button" data-close>CONTINUE SHOPPING</button>
+    </div>
+  </aside>
+
+  <!-- Wishlist drawer -->
+  <aside class="drawer" id="wishlistDrawer" role="dialog" aria-modal="true" aria-labelledby="wishlistTitle" aria-hidden="true" tabindex="-1">
+    <div class="drawer-head">
+      <h2 id="wishlistTitle">Your wishlist</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close wishlist">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <ul class="drawer-list" id="wishlistItems"></ul>
+    <div class="drawer-empty" id="wishlistEmpty" hidden>
+      <p>No saved items yet. Tap the heart on any product to save it.</p>
+      <button class="btn btn-outline" type="button" data-close>BROWSE PRODUCTS</button>
+    </div>
+  </aside>
+
+  <!-- Demo checkout summary -->
+  <div class="modal" id="checkoutModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-panel info-panel" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle" tabindex="-1">
+      <button class="icon-btn modal-close" type="button" data-close aria-label="Close checkout summary">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+      <p class="demo-label">DEMO ONLY: NO PAYMENT TAKEN</p>
+      <h2 id="checkoutTitle">Order summary</h2>
+      <ul class="summary-list" id="checkoutSummary"></ul>
+      <p class="summary-total">Estimated total <strong id="checkoutTotal">₹0</strong></p>
+      <p class="note">This is a frontend-only portfolio demo. No order is placed and no money moves. Real orders and payments need a secure backend and a payment provider.</p>
+      <button class="btn btn-primary" type="button" data-close>BACK TO STORE</button>
+    </div>
+  </div>
+
+  <!-- Info / demo pages (shipping, returns, privacy, terms, etc.) -->
+  <div class="modal" id="infoModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-panel info-panel" role="dialog" aria-modal="true" aria-labelledby="infoTitle" tabindex="-1">
+      <button class="icon-btn modal-close" type="button" data-close aria-label="Close">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+      <p class="demo-label">DEMO PAGE</p>
+      <h2 id="infoTitle"></h2>
+      <div id="infoBody"></div>
+      <button class="btn btn-outline" type="button" data-close>CLOSE</button>
+    </div>
+  </div>
+
+  <!-- Toasts + screen-reader announcements -->
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>
